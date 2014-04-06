@@ -11,7 +11,6 @@
 namespace Kdyby\Money;
 
 
-
 /**
  * @author Filip Procházka <filip@prochazka.su>
  */
@@ -19,7 +18,6 @@ interface Exception
 {
 
 }
-
 
 
 /**
@@ -31,7 +29,6 @@ class InvalidStateException extends \RuntimeException implements Exception
 }
 
 
-
 /**
  * @author Filip Procházka <filip@prochazka.su>
  */
@@ -41,11 +38,10 @@ class InvalidArgumentException extends \InvalidArgumentException implements Exce
 }
 
 
-
 /**
  * @author Filip Procházka <filip@prochazka.su>
  */
-class SingletonException extends \RuntimeException implements Exception
+class ClassNotInstantiableException extends \LogicException implements Exception
 {
 
 }

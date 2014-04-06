@@ -13,16 +13,16 @@ namespace Kdyby\Money;
 use Nette;
 
 
-
 /**
  * @author Michal Gebauer <mishak@mishak.net>
  * @author Filip Procházka <filip@prochazka.su>
  * @author Ladislav Marek <ladislav@marek.su>
  *
- * @property-read int $decimals
- * @property-read string $name
- * @property-read string $number
  * @property-read string $code
+ * @property-read string $number
+ * @property-read string $name
+ * @property-read int $subunitsInUnit
+ * @property-read string[] $countries
  */
 final class Currency extends Nette\Object
 {
@@ -45,32 +45,29 @@ final class Currency extends Nette\Object
 	/**
 	 * @var int
 	 */
-	private $decimals;
+	private $subunitsInUnit;
 
 	/**
 	 * @var string[]
 	 */
 	private $countries;
 
-	/**
-	 * @var Currency[]
-	 */
-	private static $currencies = array();
-
-
 
 	/**
-	 * @param array $record Record from CurrencyTable (code, number, name, decimals, countries)
+	 * @param string
+	 * @param string
+	 * @param string
+	 * @param int
+	 * @param string[]
 	 */
-	final private function __construct($record)
+	public function __construct($code, $number, $name, $subunitsInUnit, array $countries)
 	{
-		$this->code = $record['code'];
-		$this->number = $record['number'];
-		$this->name = $record['name'];
-		$this->decimals = $record['decimals'];
-		$this->countries = $record['countries'];
+		$this->code = $code;
+		$this->number = $number;
+		$this->name = $name;
+		$this->subunitsInUnit = $subunitsInUnit;
+		$this->countries = $countries;
 	}
-
 
 
 	/**
@@ -82,7 +79,6 @@ final class Currency extends Nette\Object
 	}
 
 
-
 	/**
 	 * @return string
 	 */
@@ -90,7 +86,6 @@ final class Currency extends Nette\Object
 	{
 		return $this->number;
 	}
-
 
 
 	/**
@@ -102,25 +97,13 @@ final class Currency extends Nette\Object
 	}
 
 
-
 	/**
 	 * @return int
 	 */
-	public function getDecimals()
+	public function getSubunitsInUnit()
 	{
-		return $this->decimals;
+		return $this->subunitsInUnit;
 	}
-
-
-
-	/**
-	 * @return int
-	 */
-	public function getScale()
-	{
-		return pow(10, $this->decimals);
-	}
-
 
 
 	/**
@@ -132,75 +115,21 @@ final class Currency extends Nette\Object
 	}
 
 
-
 	/**
-	 * @param string $code 3 letter ISO 4217 code
-	 * @throws InvalidArgumentException
-	 * @return Currency
-	 */
-	public static function get($code)
-	{
-		if (isset(static::$currencies[$code = strtoupper($code)])) {
-			return static::$currencies[$code];
-		}
-
-		if (($record = CurrencyTable::getRecord($code)) === NULL) {
-			throw new InvalidArgumentException("Currency code '$code' is not in a CurrencyTable.");
-		}
-
-		return static::$currencies[$code] = new static($record);
-	}
-
-
-
-	/**
-	 * @param  int
 	 * @return int
 	 */
-	public function scaleAmount($amount)
+	public function computePrecision()
 	{
-		return (int) round($amount * $this->getScale(), 10);
+		return Math::floorLog($this->subunitsInUnit, 10);
 	}
 
 
-
 	/**
-	 * @param  int
-	 * @return float
+	 * @return string
 	 */
-	public function unscaleAmount($amount)
+	public function __toString()
 	{
-		return $amount / $this->getScale();
-	}
-
-
-
-	/**
-	 * @throws SingletonException
-	 */
-	public function __clone()
-	{
-		throw new SingletonException("Cloning is not allowed on this object.");
-	}
-
-
-
-	/**
-	 * @throws SingletonException
-	 */
-	public function __wakeup()
-	{
-		throw new SingletonException("Unserialization is not allowed on this object.");
-	}
-
-
-
-	/**
-	 * @throws SingletonException
-	 */
-	public static function __set_state($an_array)
-	{
-		throw new SingletonException("Unserialization is not allowed on this object.");
+		return $this->code;
 	}
 
 }
